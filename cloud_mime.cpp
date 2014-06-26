@@ -104,8 +104,6 @@ void t_mime_parser::refresh(uint32_t nnew){
     const char *pk = NULL;  //pntr to key name
     int32_t sk = 0, Header_mark = -1;  //index of found key in buffer
 
-    MIME_TRACE(0, "%16c", &lbuf.buf[lbuf.Read_mark]);
-
     //parser - testing new lines for matching mime content keys
     for(int mi = 0; (NULL != (pk = content.v[mi].key.p)); mi++){
 
@@ -115,8 +113,8 @@ void t_mime_parser::refresh(uint32_t nnew){
         if((sk = content.v[mi].key.size) == 0)  //no keylen defined
             continue;
 
-        if(BODYPROC == sta)  //during body look only for boundary, if exists
-            if((pk[0] != '-') || (pk[1] != '-'))
+        if(BODYPROC == sta)  //during body look only for boundary, if exists, we cand uses sBoundary key as it is
+            if((pk[0] != '-') || (pk[1] != '-'))  //replaced by real roundary strinch which we doesnt know all from here
                 continue;
 
         if(0 != wrapped_memcmp(&lbuf, (uint8_t *)pk, sk))  //match with mk header(== key)
@@ -127,6 +125,15 @@ void t_mime_parser::refresh(uint32_t nnew){
         CircleBuff_Read(&lbuf, NULL, sk);  //go behing key on local copy
         break; //bring new line
     }
+
+    if((BODYPROC == sta) && (pk)) //if body part and no boundary than parses is no need
+        return;
+
+#ifdef MIME_TRACE
+    char dline[32]; sscanf((char *)&parser_buf.buf[parser_buf.Read_mark], "%31[^\r\n]", dline);
+    MIME_TRACE(0, "bgnln - %s(%d)", dline, CircleBuff_RdFree(&parser_buf));
+    MIME_TRACE(1, "pttrn - %s", pk);
+#endif //MIME_TRACE
 
     //looking for new line which continues with another enter or letter
     char ch1 = 0, ch2 = 0;
@@ -172,7 +179,7 @@ void t_mime_parser::refresh(uint32_t nnew){
                     sta = BODYPROC;
             break;
             case BODYPROC:
-                content_buf.Write_mark = lbuf.Read_mark;    //corection to oweral size including the last LF
+                content_buf.Write_mark = parser_buf.Read_mark;
                 lbuf.Read_mark = (uint8_t *)content.get(sBody)->p - parser_buf.buf;  //arange markers
                 lbuf.Write_mark = Header_mark;
                 lnew.p = content.get(sBody)->p; //copy original

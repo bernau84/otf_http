@@ -52,40 +52,40 @@ void t_http_multipart_parser::feed(uint8_t *dt, unsigned int size){
         }
     }
 
-    if(length){ //can guard the overal/http length only
-
-        if(m_http.iscomplete(length)){
-
-            uint32_t BodyEnd_mark = (uint8_t *)m_http.content.get(sBody)->p - m_buf.buf;  //sBody must exists now
-            BodyEnd_mark = (BodyEnd_mark + length) % m_buf.size; //begin of body + length
-
-            m_http.enclose(BodyEnd_mark); //close this http at begin of body + length
-            result(200); //virtual method
-            return;
-        }
-
-        m_buf.Read_mark = m_buf.Write_mark; //to avoid owerflow
-    }
-
-     m_att->refresh(size); //avtual mime part update (including boundary scan)
+    m_att->refresh(size); //avtual mime part update (including boundary scan)
 
     if(t_mime_parser::COMPLETED == m_att->status()){ //move to new attachment
 
-        uint8_t bend[2]; uint32_t nbend = sizeof(bend);
-        const uint8_t *pbend = m_att->get_raw(&boundary[0], bend, &nbend);
-        if(0 == memcmp(pbend, "--", 2)){
+       uint8_t bend[2]; uint32_t nbend = sizeof(bend);
+       const uint8_t *pbend = m_att->get_raw(&boundary[0], bend, &nbend);
+       if(0 == memcmp(pbend, "--", 2)){
 
-            m_http.enclose(m_att->content_buf.Write_mark); //close this http at with last mime position
-            result(200); //virtual method
-            return;
-        }
+           m_http.enclose(m_att->content_buf.Write_mark); //close this http at with last mime position
+           result(200); //virtual method
+           return;
+       }
 
-        if((m_att - m_mime) < (MIME_MULTIPART_MAXN-1)){
+       if((m_att - m_mime) < (MIME_MULTIPART_MAXN-1)){
 
-            t_mime_parser *prev = m_att;
-            (++m_att)->content.succ = &prev->content;  //increment and chain with previous
-            m_att->init(&prev->parser_buf);  //begins at the end of previous
-        }
+           t_mime_parser *prev = m_att;
+           (++m_att)->content.succ = &prev->content;  //increment and chain with previous
+           m_att->init(&prev->parser_buf);  //begins at the end of previous
+       }
 
     }
+
+//    if(length){ //can guard the overal/http length only
+
+//        if(m_http.iscomplete(length)){
+
+//            uint32_t BodyEnd_mark = (uint8_t *)m_http.content.get(sBody)->p - m_buf.buf;  //sBody must exists now
+//            BodyEnd_mark = (BodyEnd_mark + length) % m_buf.size; //begin of body + length
+
+//            m_http.enclose(BodyEnd_mark); //close this http at begin of body + length
+//            result(200); //virtual method
+//            return;
+//        }
+
+//        m_buf.Read_mark = m_buf.Write_mark; //to avoid owerflow
+//    }
 }

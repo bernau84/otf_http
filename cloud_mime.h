@@ -32,8 +32,8 @@ const t_array_content mime_keys_v1_0[] = {
     { sContentLocation, 0},
     { sContentDisposition, 0},
     { sContentTransferEnc, 0},
-//    { sBody, 0}, - at runtime
-//    { sBoundary, 0}, - at runtime
+//    { sBody, 0}, - placeholder; defined at runtime
+//    { sBoundary, 0}, - placeholder; defined at runtime
     { NULL, 0}    //End Mark
 };
 
@@ -122,8 +122,8 @@ public:
       t_mime_parser(const t_array_content *_keys = mime_keys_v1_0):
           content(_keys){
 
-        reset();
-        sta = STOPED;
+          reset();
+          sta = STOPED;
       }
 
       ~t_mime_parser(){;}
