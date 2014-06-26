@@ -76,12 +76,15 @@ public:
 
       uint32_t data_avaiable(){  //check if mime already has data and how many
 
-          uint8_t *p;
-          if((p = (uint8_t *)content.get(sBody)->p) == NULL)
-            return 0;
+          uint8_t *p = (uint8_t *)content.get(sBody)->p;
 
+          if(NULL == p) return 0; //no body
+              else if(sta == COMPLETED)
+                return content.get(sBody)->size;  //size should be valid
+
+          //otherwise we have to count it
           t_CircleBuff lbuf = parser_buf; //on loc. copy
-          if(sta != COMPLETED) lbuf.Read_mark = p - lbuf.buf;  //set data pointer
+          lbuf.Read_mark = p - lbuf.buf;  //set data pointer
           return CircleBuff_RdFree(&lbuf);
       }
 
@@ -115,7 +118,8 @@ public:
 
       void enclose(uint32_t mark){  //define end od mime from outside
 
-          parser_buf.Write_mark = mark % parser_buf.size;
+          content_buf.Read_mark = mark % content_buf.size;
+          parser_buf.Read_mark = content_buf.Read_mark;
           enclose();
       }
 

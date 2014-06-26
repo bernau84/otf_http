@@ -2,7 +2,7 @@
 #include "cloud_http.h"
 #include <cstring>
 
-uint8_t           	recv_data[1024];
+uint8_t           	recv_data[1600];
 t_CircleBuff 		recv_buff = { recv_data, sizeof(recv_data), 0, 0, -1 };
 t_http_multipart_parser recv_parser(&recv_buff);
 
@@ -120,11 +120,13 @@ bool parse_http_scenario1(const char *ex, int exsz){
             recv_parser.restart();
             rep_count += 1;
         }
-
     }
 
-    if(rep_count == (recv_buff.size / rep_buff.size))
-        return true;  //we've found as many completed http as possible
+    recv_parser.restart();
+
+    if(recv_buff.size > rep_buff.size)  //parse buffer is capable of http
+        if(rep_count == (N / rep_buff.size))
+            return true;  //we've found as many completed http as possible
 
     return false;
 }

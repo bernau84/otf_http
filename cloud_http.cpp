@@ -19,7 +19,7 @@ void t_http_multipart_parser::feed(uint8_t *dt, unsigned int size){
 
     m_http.refresh(size);
 
-    if(m_http.status() == t_mime_parser::OWERFLOW){
+    if(t_mime_parser::OWERFLOW == m_http.status()){
 
         m_http.sta = t_mime_parser::PARSEERR; //overflow is transient state only
         result(413); //entity too long
@@ -27,7 +27,7 @@ void t_http_multipart_parser::feed(uint8_t *dt, unsigned int size){
     }
 
     //looking for size definition from http head
-    if(m_http.data_avaiable()){  //http head is whole
+    if(t_mime_parser::BODYPROC == m_http.status()){  //http head is whole
 
         if((!length && !boundary[0])){ //cache some values
 
@@ -36,7 +36,7 @@ void t_http_multipart_parser::feed(uint8_t *dt, unsigned int size){
                 boundary[0] = boundary[1] = '-';
 
                 for(int n=0; n<MIME_MULTIPART_MAXN; n++)
-                    m_mime[n].content.add(&boundary[0], empty_content);  //on a first free position
+                    m_mime[n].content.add(boundary, empty_content);  //on a first free position
             }
 
             if(m_http.get_formated(sHttpLength, "%d", &length) > 0){
@@ -74,18 +74,16 @@ void t_http_multipart_parser::feed(uint8_t *dt, unsigned int size){
 
     }
 
-//    if(length){ //can guard the overal/http length only
+    if(length){ //can guard the overal/http length only
 
-//        if(m_http.iscomplete(length)){
+        if(m_http.iscomplete(length)){
 
-//            uint32_t BodyEnd_mark = (uint8_t *)m_http.content.get(sBody)->p - m_buf.buf;  //sBody must exists now
-//            BodyEnd_mark = (BodyEnd_mark + length) % m_buf.size; //begin of body + length
+            uint32_t BodyEnd_mark = (uint8_t *)m_http.content.get(sBody)->p - m_buf.buf;  //sBody must exists now
+            BodyEnd_mark = (BodyEnd_mark + length) % m_buf.size; //begin of body + length
 
-//            m_http.enclose(BodyEnd_mark); //close this http at begin of body + length
-//            result(200); //virtual method
-//            return;
-//        }
-
-//        m_buf.Read_mark = m_buf.Write_mark; //to avoid owerflow
-//    }
+            m_http.enclose(BodyEnd_mark); //close this http at begin of body + length
+            result(200); //virtual method
+            return;
+        }
+    }
 }

@@ -102,31 +102,33 @@ void t_mime_parser::refresh(uint32_t nnew){
     t_CircleBuff lbuf = parser_buf;  //work on copy of original
     t_array_content lnew;
     const char *pk = NULL;  //pntr to key name
+    bool boundaryex = false, boundarysc = false;
     int32_t sk = 0, Header_mark = -1;  //index of found key in buffer
 
     //parser - testing new lines for matching mime content keys
     for(int mi = 0; (NULL != (pk = content.v[mi].key.p)); mi++){
 
-        if(NULL != content.get(pk)->p)  //we already had
+        if(NULL != content.get(pk)->p)  //we already had this header
             continue;
 
         if((sk = content.v[mi].key.size) == 0)  //no keylen defined
             continue;
 
-        if(BODYPROC == sta)  //during body look only for boundary, if exists, we cand uses sBoundary key as it is
-            if((pk[0] != '-') || (pk[1] != '-'))  //replaced by real roundary strinch which we doesnt know all from here
-                continue;
+        /*! \todo - something more elegant for BODYPROC optimalization */
+        boundaryex |= boundarysc = ((pk[0] == '-') || (pk[1] == '-'));  //it is boundary scan now (workaround - sBoundary is replace by real string!)
+        if(((BODYPROC == sta) && (!boundarysc)) ||  //during body look only for boundary, if exists
+           ((BODYPROC != sta) && (boundarysc))) continue;     //in the other case we omit boundary scanning
 
         if(0 != wrapped_memcmp(&lbuf, (uint8_t *)pk, sk))  //match with mk header(== key)
             continue;
 
-        //new match - now we test if the item is completed
+        //new match - later we test if the item is completed
         Header_mark = lbuf.Read_mark;  //match mark, remember position
         CircleBuff_Read(&lbuf, NULL, sk);  //go behing key on local copy
         break; //bring new line
     }
 
-    if((BODYPROC == sta) && (pk)) //if body part and no boundary than parses is no need
+    if((BODYPROC == sta) && (!boundaryex)) //no lineshift inside body without boundary entered
         return;
 
 #ifdef MIME_TRACE
@@ -145,58 +147,51 @@ void t_mime_parser::refresh(uint32_t nnew){
             return; //item si not completed yet
 
         //second - escape control ascii, stop while white chars and literals
-        while((ch2 < ' ') && (ch2 != ' ') && (ch2 != '\t')){  //space or tabs mean continuation of line
-
-            if(0 == CircleBuff_Read(&lbuf, (uint8_t *)&ch2, 1))
-                return;
-
-            if(ch2 == '\n'){
-
-                if((sta == HEADPROC) || (sta == SEARCHBGN)){ //set item pointer, length is unknown for now
-
-                    lnew.p = (const char *)&parser_buf.buf[lbuf.Read_mark];
-                    lnew.size = (unsigned)-1;
-                    content.add(sBody, lnew);
-                }
-                break;
-            }
-        }
+        while((ch2 != '\n') && (ch2 < ' ') && (ch2 != ' ') && (ch2 != '\t')) //space or tabs mean continuation of line
+          if(0 == CircleBuff_Read(&lbuf, (uint8_t *)&ch2, 1))
+            return;
     }
 
-    //we stay on new header / body now - shift marker
-    parser_buf.Read_mark = (lbuf.Read_mark + parser_buf.size - 1) % parser_buf.size;  //move to char before
-    if(sta == SEARCHBGN) content_buf.Read_mark = parser_buf.Read_mark;  //for case there is no pk
+    //we stay on new line - shift marker anyhow
+    parser_buf.Read_mark = (lbuf.Read_mark + parser_buf.size - 1) % parser_buf.size;  //roll back 1ch
+    if(Header_mark >= 0){
 
-    if(Header_mark >= 0){  //we've found some mime item - store its props
-
-        switch(sta){
-
-            case SEARCHBGN:
-                sta = HEADPROC;
-                content_buf.Read_mark = Header_mark;  //fix this position & watch the overflow
-            case HEADPROC:
-                if(NULL != content.get(sBody, NULL))  //check existence of item Body
-                    sta = BODYPROC;
-            break;
-            case BODYPROC:
-                content_buf.Write_mark = parser_buf.Read_mark;
-                lbuf.Read_mark = (uint8_t *)content.get(sBody)->p - parser_buf.buf;  //arange markers
-                lbuf.Write_mark = Header_mark;
-                lnew.p = content.get(sBody)->p; //copy original
-                lnew.size = CircleBuff_RdFree(&lbuf); //calculate the body length
-                content.set(sBody, lnew); //update item
-                sta = COMPLETED; //+ go to set end of boundary item
-            break;
-            default:
-                return;
-        }
-
-        Header_mark = (Header_mark + sk) % parser_buf.size;  //move behind header
-        lnew.p = (const char *)&parser_buf.buf[Header_mark],  //set item pointer
-        lnew.size = (parser_buf.Read_mark + parser_buf.size - Header_mark) % parser_buf.size; //length
+        int lHeader_mark = (Header_mark + sk) % parser_buf.size;  //move behind header
+        lnew.p = (const char *)&parser_buf.buf[lHeader_mark],  //set item pointer
+        lnew.size = (parser_buf.Read_mark + parser_buf.size - lHeader_mark) % parser_buf.size; //length
         content.set(pk, lnew);
     }
 
-    if(sta != COMPLETED)
-        goto MIME_DESER_PARSER; //process new line
+    switch(sta){
+
+        case SEARCHBGN:
+            if(Header_mark >= 0){
+                sta = HEADPROC;
+                content_buf.Read_mark = Header_mark;  //set start mime position to be able watch overflow
+            } else
+                content_buf.Read_mark = parser_buf.Read_mark;  //follow parser until first match
+        case HEADPROC:
+            if(ch2 != '\n') break;  //begin of Body?
+            lnew.p = (const char *)&parser_buf.buf[lbuf.Read_mark];
+            lnew.size = (unsigned)-1;
+            content.add(sBody, lnew);
+            sta = BODYPROC;
+            return;  //caller should check if there was multipart & boundary
+        break;
+        case BODYPROC:
+            if(Header_mark < 0) break;  //boundary found?
+            content_buf.Write_mark = parser_buf.Read_mark;
+            lbuf.Read_mark = (uint8_t *)content.get(sBody)->p - parser_buf.buf;  //arange markers
+            lbuf.Write_mark = Header_mark;
+            lnew.p = content.get(sBody)->p; //copy original
+            lnew.size = CircleBuff_RdFree(&lbuf); //calculate the body length
+            content.set(sBody, lnew); //update item
+            sta = COMPLETED; //+ go to set end of boundary item
+            return;  //done
+        default:
+            sta = PARSEERR;
+            return;  //fatal
+    }
+
+    goto MIME_DESER_PARSER; //process new line
 }
