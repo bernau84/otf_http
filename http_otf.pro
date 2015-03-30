@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += core
+QT       += core network
 
 QT       -= gui
 
@@ -19,7 +19,7 @@ SOURCES += main.cpp \
     cloud_http.cpp \
     cloud_helper.cpp \
     cloud_mime.cpp \
-    cloud_tests.cpp
+    cloud_auth.cpp
 
 HEADERS += \
     cloud_http.h \

@@ -5,9 +5,9 @@ const char *sHttpVer    = "HTTP/";        //version + code follows
 const char *sHttpType   = "Content-Type: ";
 const char *sHttpLength = "Content-Length: ";
 const char *sHttpHost   = "Host: ";
+const char *sHttpAuth   = "WWW-Authenticate";
 
 /*! \brief - feed mime parset in order
- * \todo - multipeart parset according to dize in contex-disposition (quicker than looking for boundary)
 */
 void t_http_multipart_parser::feed(uint8_t *dt, unsigned int size){
 
@@ -19,7 +19,7 @@ void t_http_multipart_parser::feed(uint8_t *dt, unsigned int size){
 
     m_http.refresh(size);
 
-    if(t_mime_parser::OWERFLOW == m_http.status()){
+    if(m_http.status() == t_mime_parser::OWERFLOW){
 
         m_http.sta = t_mime_parser::PARSEERR; //overflow is transient state only
         result(413); //entity too long
@@ -27,7 +27,7 @@ void t_http_multipart_parser::feed(uint8_t *dt, unsigned int size){
     }
 
     //looking for size definition from http head
-    if(t_mime_parser::BODYPROC == m_http.status()){  //http head is whole
+    if(m_http.data_avaiable()){  //http head is whole
 
         if((!length && !boundary[0])){ //cache some values
 
@@ -36,7 +36,7 @@ void t_http_multipart_parser::feed(uint8_t *dt, unsigned int size){
                 boundary[0] = boundary[1] = '-';
 
                 for(int n=0; n<MIME_MULTIPART_MAXN; n++)
-                    m_mime[n].content.add(boundary, empty_content);  //on a first free position
+                    m_mime[n].content.add(&boundary[0], empty_content);  //on a first free position
             }
 
             if(m_http.get_formated(sHttpLength, "%d", &length) > 0){
@@ -47,12 +47,12 @@ void t_http_multipart_parser::feed(uint8_t *dt, unsigned int size){
         if((!length && !boundary[0])){ //cache some values
 
             m_http.sta = t_mime_parser::PARSEERR;
-            result(411); //leng requested
+            result(411); //length requested
             return;
         }
     }
 
-    m_att->refresh(size); //avtual mime part update (including boundary scan)
+    m_att->refresh(size); //actual mime part update (including boundary scan)
 
     if(t_mime_parser::COMPLETED == m_att->status()){ //move to new attachment
 
@@ -85,5 +85,7 @@ void t_http_multipart_parser::feed(uint8_t *dt, unsigned int size){
             result(200); //virtual method
             return;
         }
+
+        m_buf.Read_mark = m_buf.Write_mark; //to avoid owerflow
     }
 }

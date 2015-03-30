@@ -8,6 +8,7 @@
  and keys for looking in associative content storage of http/mime
 */
 extern const char *sHttpVer;
+extern const char *sHttpAuth;
 extern const char *sHttpType;
 extern const char *sHttpLength;
 extern const char *sHttpHost;
@@ -15,6 +16,7 @@ extern const char *sHttpHost;
 const t_array_content http_keys_v1_0[] = {
 
     {sHttpVer, 0},
+    {sHttpAuth, 0},
     {sHttpType, 0},
     {sHttpLength, 0},
     {sHttpHost, 0},
@@ -43,11 +45,20 @@ protected:
     unsigned short last_err;
 
 public:
+
+    /*! \todo - musime zmenit tak aby sme nemuseli kopirovat data,
+     * buffer musi byt mimo tridu a budem volat jen update/refresh
+     * ne primo data zapisovat !*/
     void feed(uint8_t *dt, unsigned int size);  //update & parse (inf dt = 0 buffer if filled in advance)
 
     virtual void result(unsigned short code){  //parsing/processing error
-
+        /*! \todo - shoul return http recive code as well */
         last_err = code;
+    }
+
+    t_mime_parser get_head(){  //returns copy of parser parser
+
+        return m_http;
     }
 
     t_mime_parser get_part(unsigned int n){  //returns copy of parser parser
@@ -77,19 +88,21 @@ public:
         last_err = 0;
 
         m_http.reset();
-        for(int n=0; n<MIME_MULTIPART_MAXN; n++)
-            m_mime[n].reset();
-
         m_http.init(&m_buf);
-        m_att->init(&m_buf);
+
+        for(int n=0; n<MIME_MULTIPART_MAXN; n++){
+
+            m_mime[n].reset();
+            m_att->init(&m_buf);
+        }
+
+        m_att = m_mime;
     }
 
     t_http_multipart_parser(t_CircleBuff *_buf):
        m_http(http_keys_v1_0){
         
         m_buf = *_buf;
-        m_att = m_mime;
-
         restart();
     }
    

@@ -91,6 +91,8 @@ void t_mime_parser::refresh(uint32_t nnew){
             return;
     }
 
+    /*! \todo - update content_buf properly to update overlow flag
+     * not by shifting read / write pointer as it is now */
     if(content_buf.overflow >= 0){
 
         sta = OWERFLOW;

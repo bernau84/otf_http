@@ -107,6 +107,7 @@ public:
 
       void init(t_CircleBuff *_buf){ //asign raw data to mime deserializator
 
+          /*! \todo - actualize body length in content */
           content_buf = parser_buf = *_buf;  //depp copy to save begin of attachment
           reset();
       }
