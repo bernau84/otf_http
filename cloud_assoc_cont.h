@@ -92,13 +92,13 @@ public:
 
   void reset(){
 
-      for(int i = 0; i < N; i++)
+      for(unsigned i = 0; i < N; i++)
         v[i].item = empty_content;
   }
 
   t_assoc_chlist_content(const t_array_content _keys[]){
 
-    for(int i = 0; (NULL != _keys[i].p) && (i < N); i++){
+    for(unsigned i = 0; (NULL != _keys[i].p) && (i < N); i++){
 
         v[i].key.p = _keys[i].p;
         v[i].key.size = (_keys[i].size) ? _keys[i].size : strlen(_keys[i].p);

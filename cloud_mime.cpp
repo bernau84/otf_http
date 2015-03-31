@@ -58,7 +58,8 @@ int t_mime_parser::get_formated(const char *key, const char *f, ...){
  */
 int t_mime_parser::get_keyparam(const char *key, const char *subkey, const char *f, ...){
 
-    uint8_t lin[MIME_CONTENT_ITSZ+1]; //prep[size] variable size doesnt work with vsnprintf ?!
+    //uint8_t lin[content.get(key)->size]; variable size doesnt work with vsnprintf ?!
+    uint8_t lin[MIME_CONTENT_ITSZ+1];
     uint32_t n = sizeof(lin);
     const uint8_t *p = get_raw(key, lin, &n);
     if(NULL == p)

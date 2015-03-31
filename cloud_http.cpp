@@ -5,7 +5,7 @@ const char *sHttpVer    = "HTTP/";        //version + code follows
 const char *sHttpType   = "Content-Type: ";
 const char *sHttpLength = "Content-Length: ";
 const char *sHttpHost   = "Host: ";
-const char *sHttpAuth   = "WWW-Authenticate";
+const char *sHttpAuth   = "WWW-Authenticate: ";
 
 /*! \brief - feed mime parset in order
 */

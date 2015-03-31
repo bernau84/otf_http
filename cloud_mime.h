@@ -20,8 +20,8 @@ extern const char *sBody;
 extern const char *sBoundary;
 
 /*! \todo */
-#define MIME_TRACE(NO, FORMAT, ARGS...)\
-    fprintf (stderr, "%d>  "FORMAT"\n", NO, ARGS);
+#define MIME_TRACE(NO, FORMAT, ...)\
+    fprintf (stderr, "%d>  "FORMAT"\n", NO, __VA_ARGS__);
 
 
 /*!\brief - structure of mime header */
