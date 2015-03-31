@@ -90,13 +90,13 @@ public:
         m_http.reset();
         m_http.init(&m_buf);
 
+        m_att = m_mime;
+
         for(int n=0; n<MIME_MULTIPART_MAXN; n++){
 
             m_mime[n].reset();
             m_att->init(&m_buf);
         }
-
-        m_att = m_mime;
     }
 
     t_http_multipart_parser(t_CircleBuff *_buf):

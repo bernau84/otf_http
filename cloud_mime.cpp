@@ -118,7 +118,7 @@ void t_mime_parser::refresh(uint32_t nnew){
 
         /*! \todo - something more elegant for BODYPROC optimalization */
         boundaryex |= boundarysc = ((pk[0] == '-') || (pk[1] == '-'));  //it is boundary scan now (workaround - sBoundary is replace by real string!)
-        if(((BODYPROC == sta) && (!boundarysc)) ||  //during body look only for boundary, if exists
+        if(((BODYPROC == sta) && (!boundarysc)) ||  //during body proc we only look for boundary, if exists
            ((BODYPROC != sta) && (boundarysc))) continue;     //in the other case we omit boundary scanning
 
         if(0 != wrapped_memcmp(&lbuf, (uint8_t *)pk, sk))  //match with mk header(== key)
@@ -148,7 +148,7 @@ void t_mime_parser::refresh(uint32_t nnew){
           if(0 == CircleBuff_Read(&lbuf, (uint8_t *)&ch1, 1))
             return; //item si not completed yet
 
-        //second - escape control ascii, stop while white chars and literals
+        //second - escape control ascii, stop on white chars and literals
         while((ch2 != '\n') && (ch2 < ' ') && (ch2 != ' ') && (ch2 != '\t')) //space or tabs mean continuation of line
           if(0 == CircleBuff_Read(&lbuf, (uint8_t *)&ch2, 1))
             return;

@@ -1,0 +1,275 @@
+GET / HTTP/1.1
+Host: test.webdav.org
+User-Agent: Mozilla/5.0 (Windows NT 6.1; rv:36.0) Gecko/20100101 Firefox/36.0
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
+Accept-Language: en-US,en;q=0.5
+Accept-Encoding: gzip, deflate
+DNT: 1
+Connection: keep-alive
+
+HTTP/1.0 200 OK
+Date: Tue, 31 Mar 2015 10:57:43 GMT
+Server: Apache/2.0.54 (Debian GNU/Linux) DAV/2 SVN/1.3.2
+Last-Modified: Fri, 13 Oct 2006 15:06:48 GMT
+ETag: "61729-1008-a31bf200"
+Accept-Ranges: bytes
+Content-Length: 4104
+Content-Type: text/html
+X-Cache: MISS from jabjnnlb
+X-Cache-Lookup: MISS from jabjnnlb:3128
+Via: 1.0 jabjnnlb (squid/3.1.21)
+Connection: keep-alive
+
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<html>
+  <head>
+    <title>WebDAV Testing Server</title>
+  </head>
+
+  <body>
+    <h1>WebDAV Testing Server</h1>
+
+    <p>
+      This server is intended for testing WebDAV client operations,
+      and verifying server interoperability. Details about the
+      available services are below.
+    </p>
+    <p>
+      <a href="mailto:gstein@lyra.org">Greg Stein</a> maintains this
+      server. Please contact him if you have particular testing
+      scenarios in mind, questions about this server's configuration,
+      or other testing related matters.
+    </p>
+
+    <p>
+      <strong>Note:</strong> this server has been configured to have a
+      limit of 100 megabytes of storage for <em>all</em>
+      content. Please be considerate to your fellow testers and do not
+      attempt to to monopolize this storage space. If you are
+      interested in running an "out of space" test, then please
+      contact <a href="mailto:gstein@lyra.org">Greg</a> to prepare a
+      test environment.
+    </p>
+
+    <hr>
+
+    <h2>Apache 2.0.54 (with builtin mod_dav/mod_dav_fs)</h2>
+    <p>
+      This server (http://test.webdav.org/) is running
+      <a href="http://httpd.apache.org/">Apache 2.0.54</a>
+      and its builtin WebDAV functionality (through the mod_dav and
+      mod_dav_fs modules).
+    </p>
+
+    <p>
+      The following URL spaces are all DAV-enabled on this server:
+    </p>
+
+    <blockquote>
+
+      <dl>
+	<dt><strong><code>http://test.webdav.org/dav/</code></strong></dt>
+	<dd>
+	  This space has no authentication/authorization enabled on
+	  it. Clients should be able to read/write at will to this
+	  area.
+	  <p>
+	  </p>
+	</dd>
+
+	<dt><strong><code>http://test.webdav.org/auth-basic/</code></strong></dt>
+	<dd>
+	  This area has Basic Authentication enabled. Available users
+	  are: <strong><tt>user1</tt></strong> through
+	  <strong><tt>user9</tt></strong>. The password for each user
+	  is the same as the id. Authentication is required to read or
+	  write resources in this namespace.
+	  <p>
+	  </p>
+	</dd>
+
+	<dt><strong><code>http://test.webdav.org/auth-digest/</code></strong></dt>
+	<dd>
+	  This area has Digest Authentication enabled. Available users
+	  are: <strong><tt>user1</tt></strong> through
+	  <strong><tt>user9</tt></strong>. The password for each user
+	  is the same as the id. Authentication is required to read or
+	  write resources in this namespace.
+	  <p>
+	  </p>
+	</dd>
+      </dl>
+      </blockquote>
+
+    <p>
+      The following spaces have been configured to issue
+      redirects. Clients can use these spaces to verify their handling
+      of redirects and removal.
+    </p>
+
+    <blockquote>
+      <dl>
+	<dt><strong><code>http://test.webdav.org/redir-perm/</code></strong></dt>
+	<dd>
+	  This area has is configured to redirect to
+	  <code>http://test.webdav.org/dav/</code>. It will return a
+	  <strong>301 (Moved Permanently)</strong> for all requests.
+	  <p>
+	  </p>
+	</dd>
+
+	<dt><strong><code>http://test.webdav.org/redir-tmp/</code></strong></dt>
+	<dd>
+	  This area has is configured to redirect to
+	  <code>http://test.webdav.org/dav/</code>. It will return a
+	  <strong>302 (Found)</strong> for all requests.
+	  <p>
+	  </p>
+	</dd>
+
+	<dt><strong><code>http://test.webdav.org/redir-other/</code></strong></dt>
+	<dd>
+	  This area has is configured to redirect to
+	  <code>http://test.webdav.org/dav/</code>. It will return a
+	  <strong>303 (See Other)</strong> for all requests.
+	  <p>
+	  </p>
+	</dd>
+
+	<dt><strong><code>http://test.webdav.org/redir-gone/</code></strong></dt>
+	<dd>
+	  This area has is configured to return a <strong>410
+	  (Gone)</strong> for all requests.
+	  <p>
+	  </p>
+	</dd>
+      </dl>
+    </blockquote>
+
+    <hr>
+    <h2>Apache 1.3</h2>
+    <p>
+      <i>An Apache 1.3-based DAV server may be provided in the future. Watch
+      this space for more information.</i>
+    </p>
+
+    <hr>
+    <address><a href="mailto:gstein@lyra.org">gstein</a></address>
+<!-- Created: Tue Oct  9 01:48:18 PDT 2001 -->
+<!-- hhmts start -->
+Last modified: Tue Sep  1 23:08:00 PDT 2002
+<!-- hhmts end -->
+  </body>
+</html>
+GET /favicon.ico HTTP/1.1
+Host: test.webdav.org
+User-Agent: Mozilla/5.0 (Windows NT 6.1; rv:36.0) Gecko/20100101 Firefox/36.0
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
+Accept-Language: en-US,en;q=0.5
+Accept-Encoding: gzip, deflate
+DNT: 1
+Connection: keep-alive
+
+HTTP/1.0 404 Not Found
+Date: Tue, 31 Mar 2015 10:57:44 GMT
+Server: Apache/2.0.54 (Debian GNU/Linux) DAV/2 SVN/1.3.2
+Content-Length: 209
+Content-Type: text/html; charset=iso-8859-1
+X-Cache: MISS from jabjnnlb
+X-Cache-Lookup: MISS from jabjnnlb:3128
+Via: 1.0 jabjnnlb (squid/3.1.21)
+Connection: keep-alive
+
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML 2.0//EN">
+<html><head>
+<title>404 Not Found</title>
+</head><body>
+<h1>Not Found</h1>
+<p>The requested URL /favicon.ico was not found on this server.</p>
+</body></html>
+GET /favicon.ico HTTP/1.1
+Host: test.webdav.org
+User-Agent: Mozilla/5.0 (Windows NT 6.1; rv:36.0) Gecko/20100101 Firefox/36.0
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
+Accept-Language: en-US,en;q=0.5
+Accept-Encoding: gzip, deflate
+DNT: 1
+Connection: keep-alive
+
+HTTP/1.0 404 Not Found
+Date: Tue, 31 Mar 2015 10:57:44 GMT
+Server: Apache/2.0.54 (Debian GNU/Linux) DAV/2 SVN/1.3.2
+Content-Length: 209
+Content-Type: text/html; charset=iso-8859-1
+X-Cache: MISS from jabjnnlb
+X-Cache-Lookup: MISS from jabjnnlb:3128
+Via: 1.0 jabjnnlb (squid/3.1.21)
+Connection: keep-alive
+
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML 2.0//EN">
+<html><head>
+<title>404 Not Found</title>
+</head><body>
+<h1>Not Found</h1>
+<p>The requested URL /favicon.ico was not found on this server.</p>
+</body></html>
+GET /auth-digest/ HTTP/1.1
+Host: test.webdav.org
+User-Agent: Mozilla/5.0 (Windows NT 6.1; rv:36.0) Gecko/20100101 Firefox/36.0
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
+Accept-Language: en-US,en;q=0.5
+Accept-Encoding: gzip, deflate
+DNT: 1
+Connection: keep-alive
+
+HTTP/1.0 401 Unauthorized
+Date: Tue, 31 Mar 2015 10:57:53 GMT
+Server: Apache/2.0.54 (Debian GNU/Linux) DAV/2 SVN/1.3.2
+WWW-Authenticate: Digest realm="test", nonce="olVteJMSBQA=7dbf2eb54541cd882868a614c70b53d783d69392", algorithm=MD5, domain="/auth-digest/", qop="auth"
+Content-Length: 401
+Content-Type: text/html; charset=iso-8859-1
+Proxy-support: Session-Based-Authentication
+X-Cache: MISS from jabjnnlb
+X-Cache-Lookup: MISS from jabjnnlb:3128
+Via: 1.0 jabjnnlb (squid/3.1.21)
+Connection: keep-alive
+
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML 2.0//EN">
+<html><head>
+<title>401 Authorization Required</title>
+</head><body>
+<h1>Authorization Required</h1>
+<p>This server could not verify that you
+are authorized to access the document
+requested.  Either you supplied the wrong
+credentials (e.g., bad password), or your
+browser doesn't understand how to supply
+the credentials required.</p>
+</body></html>
+GET /auth-digest/ HTTP/1.1
+Host: test.webdav.org
+User-Agent: Mozilla/5.0 (Windows NT 6.1; rv:36.0) Gecko/20100101 Firefox/36.0
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
+Accept-Language: en-US,en;q=0.5
+Accept-Encoding: gzip, deflate
+DNT: 1
+Connection: keep-alive
+Authorization: Digest username="user1", realm="test", nonce="olVteJMSBQA=7dbf2eb54541cd882868a614c70b53d783d69392", uri="/auth-digest/", algorithm=MD5, response="4e35103b15d75e56783b6ca2c23ec8f7", qop=auth, nc=00000001, cnonce="42331a97c74ee1e6"
+
+HTTP/1.0 404 Not Found
+Date: Tue, 31 Mar 2015 10:58:03 GMT
+Server: Apache/2.0.54 (Debian GNU/Linux) DAV/2 SVN/1.3.2
+Content-Length: 210
+Content-Type: text/html; charset=iso-8859-1
+X-Cache: MISS from jabjnnlb
+X-Cache-Lookup: MISS from jabjnnlb:3128
+Via: 1.0 jabjnnlb (squid/3.1.21)
+Connection: keep-alive
+
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML 2.0//EN">
+<html><head>
+<title>404 Not Found</title>
+</head><body>
+<h1>Not Found</h1>
+<p>The requested URL /auth-digest/ was not found on this server.</p>
+</body></html>

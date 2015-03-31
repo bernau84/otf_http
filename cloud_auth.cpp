@@ -24,14 +24,13 @@ static int __cloud_web_http_result(QTcpSocket &sc){
         rxparser.feed((uint8_t *)trx, nrx);
     }
 
-    t_mime_parser head1 = rxparser.get_head();
-    head1.get_formated(sHttpVer, "%*f %d", &result);
-    rxparser.restart();
+    t_mime_parser head = rxparser.get_head();
+    head.get_formated(sHttpVer, "%*f %d", &result);
     return result;
 }
 
 
-int cloud_web_http_auth_basic(){
+int cloud_web_http_auth_basic(const char *url, const char *user, const char *pass){
 
     QTcpSocket sc(NULL);
     sc.connectToHost("test.webdav.org", 80);
@@ -39,13 +38,10 @@ int cloud_web_http_auth_basic(){
         qDebug() << sc.errorString();
     }
 
+    rxparser.restart();
     sc.write("GET /auth-basic/ HTTP/1.1\r\n"
-               "Host: test.webdav.org\r\n"
-               "Connection: keep-alive\r\n"
-               "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8\r\n"
-               "User-Agent: Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2272.101 Safari/537.36\r\n"
-               "Accept-Encoding: gzip, deflate, sdch\r\n"
-               "Accept-Language: cs-CZ,cs;q=0.8,en;q=0.6\r\n\r\n");
+             "Connection: keep-alive\r\n"
+             "Host: test.webdav.org\r\n\r\n");
 
     while(1){
 
@@ -53,14 +49,14 @@ int cloud_web_http_auth_basic(){
 
 
             case 401: {  //auth required
+
+                /*! todo - code username and password to B64 */
+
+                rxparser.restart();
                 sc.write("GET /auth-basic/ HTTP/1.1\r\n"
                          "Host: test.webdav.org\r\n"
                          "Connection: keep-alive\r\n"
-                         "Authorization: Basic dXNlcjE6dXNlcjE=\r\n"
-                         "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8\r\n"
-                         "User-Agent: Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2272.101 Safari/537.36\r\n"
-                         "Accept-Encoding: gzip, deflate, sdch\r\n"
-                         "Accept-Language: cs-CZ,cs;q=0.8,en;q=0.6\r\n\r\n");
+                         "Authorization: Basic dXNlcjE6dXNlcjE=\r\n\r\n");
             } break;
 
             case 404:    //we got in
@@ -75,13 +71,61 @@ int cloud_web_http_auth_basic(){
             break;
         }
     }
-
 }
 
 
-int cloud_web_http_auth_digest(){
+int cloud_web_http_auth_digest(const char *url, const char *user, const char *pass){
 
-    QTcpSocket sc;
-    sc.connectToHost("http://test.webdav.org/auth-digest/", 80);
-    return 0;
+    QTcpSocket sc(NULL);
+    sc.connectToHost("test.webdav.org", 80);
+    if(!sc.waitForConnected()){
+        qDebug() << sc.errorString();
+    }
+
+    rxparser.restart();
+    sc.write("GET /auth-digest/ HTTP/1.1\r\n"
+               "Host: test.webdav.org\r\n"
+               "Connection: keep-alive\r\n\r\n");
+
+    while(1){
+
+        switch(__cloud_web_http_result(sc)){
+
+
+            case 401: {  //auth required
+
+                char realm[64], nonce[64], algorithm[16], domain[32], qop[8];
+                t_mime_parser head = rxparser.get_head();
+
+                head.get_formated(sHttpAuth, "realm=\"", "%[^\"]", realm);
+                head.get_formated(sHttpAuth, "nonce=\"", "%[^\"]", nonce);
+                head.get_formated(sHttpAuth, "algorithm=\"", "%[^\"]", algorithm);
+                head.get_formated(sHttpAuth, "domain=\"", "%[^\"]", domain);
+                head.get_formated(sHttpAuth, "qop=\"", "%[^\"]", qop);
+
+                char nc[16], response[64], cnonce[32];
+                /*! \todo - count digest parameters from given */
+
+                rxparser.restart();
+                QString dig_req = QString("GET /auth-digest/ HTTP/1.1\r\n"
+                                            "Host: test.webdav.org\r\n"
+                                            "Connection: keep-alive\r\n"
+                                            "Authorization: Digest username=\"%1\", realm=\"%1\", nonce=\"%1\", uri=\"/auth-digest/\", algorithm=MD5, response=\"%1\", qop=auth, nc=00000001, cnonce=\"%1\"\r\n"
+                                          ).arg("user1").arg(realm).arg(nonce).arg(response).arg(cnonce);
+
+                sc.write(dig_req.toLatin1());
+            } break;
+
+            case 404:    //we got in
+            case 200:
+                return 1;
+            break;
+
+
+            case 0:          //timeout
+            default:
+                return 0;
+            break;
+        }
+    }
 }
